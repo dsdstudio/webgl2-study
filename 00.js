@@ -42,8 +42,8 @@ function render(time) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     var o = {
-        translate:[100,50,0],
-        rotation:[0,0,0],
+        translate:[45,150,0],
+        rotation:[rad(40),rad(25),rad(325)],
         scale:[1,1,1],
         colors:[Math.random(), Math.random(), Math.random()]
     };
@@ -59,7 +59,7 @@ function render(time) {
     gl.uniform4f(colorLocation, o.colors[0], o.colors[1], o.colors[2], 1);
     gl.uniformMatrix4fv(matLocation, false, m);
 
-    gl.drawArrays(gl.TRIANGLES, 0, 18);
+    gl.drawArrays(gl.TRIANGLES, 0, 16*6);
     requestAnimationFrame(render);
 }
 //render();
