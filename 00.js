@@ -4,7 +4,7 @@ if(!gl) console.error('webgl initialize failed');
 var vShaderSource = `#version 300 es
 in vec2 a_position;
 uniform mat3 u_matrix;
-uniform vec2 u_resolution;
+
 void main() {
   gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
 }`;
@@ -36,25 +36,27 @@ gl.bindVertexArray(vao);
 var w = gl.canvas.clientWidth, h = gl.canvas.clientHeight;
 var arr = [];
 console.log(w,h);
-for ( var i = 0; i < 50; i++ ) {
-    var x=randInt(w), y=randInt(h), angle = randInt(360);
-    angle=0;
+for ( var i = 0; i < 500; i++ ) {
+    var x=randInt(w), y=randInt(h), angle = randInt(360), size = randInt(10),
+        //x = i*30, y=i*30,
+        // size=80,
+        // x = 100, y = 100, angle = 0, size = 50,
+        tx = x - (size*.5), ty = y - (size*.5);
+        // angle=0;
     arr.push({
-        w:randInt(50), h:randInt(50),
+        w:size, h:size,
         x:x, y:y,
-        translate:[0, 0],
+        translate:[tx, ty],
         colors:[Math.random(), Math.random(), Math.random()],
         angle:angle,
         rotation:rad(angle),
         scale:[1, 1]
     });
 }
+gl.viewport(0, 0, w, h);
 
-function render() {
+function render(time) {
     resizeCanvasToDisplaySize(gl.canvas);
-
-    gl.viewport(0, 0, gl.canvas.width, gl.canvas.height);
-
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
@@ -65,15 +67,19 @@ function render() {
         m = m3.translate(m, o.translate[0], o.translate[1]);
         m = m3.rotate(m, o.rotation);
         m = m3.scale(m, o.scale[0], o.scale[1]);
-        
+        var faces = randInt(5);
+//        createRegularTriangleBuffer(gl, o.x, o.y, -0.5, faces);
         setRect(gl, o.x, o.y, o.w, o.h);
+        
         gl.uniform4f(colorLocation, o.colors[0], o.colors[1], o.colors[2], 1);
         gl.uniformMatrix3fv(matLocation, false, m);
+
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-        o.angle += 0.1;
+        o.angle += 0.5;
         o.rotation = rad(o.angle);
     }
+//    console.log(time);
     requestAnimationFrame(render);
 }
-
+//render();
 requestAnimationFrame(render);

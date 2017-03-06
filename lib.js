@@ -75,6 +75,25 @@ function resizeCanvasToDisplaySize(canvas, multiplier) {
 
 function randInt(range) { return Math.floor(Math.random() * range); }
 function rad(angle) { return angle*Math.PI/180; }
+function createRegularTriangleBuffer(gl, x, y, radius, n) {
+    // 원의 반지름음 0.5라 가정
+    var buf = [], r = radius || 0.5, c = Math.cos, s = Math.sin;
+    var angleStep = 360 / n;
+    // 중점
+    var center = { x:x, y:y };
+    var startAngle = 90;
+    var i = n;
+    buf.push(0.0, 0.0, 0.0);
+
+    while(i--) {
+        buf.push(center.x + c(rad(startAngle)) * r, center.y + s(rad(startAngle)) * r, 0.0);
+        startAngle += angleStep;
+    }
+    
+    buf.push(center.x + c(rad(startAngle)) * r, center.y + s(rad(startAngle)) * r, 0.0);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(buf), gl.STATIC_DRAW);
+}
+
 var m3 = {
     identity: function() {
         return [
@@ -140,7 +159,7 @@ var m3 = {
             b10 * a02 + b11 * a12 + b12 * a22,
             b20 * a00 + b21 * a10 + b22 * a20,
             b20 * a01 + b21 * a11 + b22 * a21,
-            b20 * a02 + b21 * a12 + b22 * a22,
+            b20 * a02 + b21 * a12 + b22 * a22
         ];
     },
     translate:function(m, tx, ty) {
