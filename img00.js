@@ -136,14 +136,14 @@ function render() {
 
     gl.uniform1fv(kernelLocation, edgeDetectKernel);
     gl.uniform1f(kernelWeightLocation, computeKernelWeight(edgeDetectKernel));
-    var m = m3.projection(w, h);
     for ( var i = 0; i < 11; i++) {
-        var p = {x:30*i, y:30*i};
-        m = m3.translate(m, 300, 300);
-        m = m3.translate(m, p.x - center.x, p.y - center.y);
+        var m = m3.projection(w, h);
+        var p = {x:image.width*i, y:image.height*i};
+        m = m3.translate(m, p.x, p.y);
+        m = m3.translate(m, -center.x, -center.y);
         m = m3.rotate(m, rad(angle));
         m = m3.translate(m, -center.x, -center.y);
-        m = m3.scale(m, 1.0, 1.0);
+        m = m3.scale(m, 1, 1);
         gl.uniformMatrix3fv(matLocation, false, m);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
     }
