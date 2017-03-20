@@ -6,11 +6,11 @@ in vec4 a_position;
 in vec4 a_color;
 
 uniform mat4 u_matrix;
-
 out vec4 v_color;
 
 void main() {
-  gl_Position = u_matrix * a_position;
+  vec4 position = u_matrix * a_position;
+  gl_Position = position;
 
   v_color = a_color;
 }`;
@@ -55,8 +55,8 @@ gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
 var w = gl.canvas.clientWidth, h = gl.canvas.clientHeight;
 var o = {
-    translate:[45,150,0],
-    rotation:[rad(40),rad(25),rad(325)],
+    translate:[-150,0,-360],
+    rotation:[rad(190),rad(40),rad(30)],
     scale:[1,1,1],
     colors:[Math.random(), Math.random(), Math.random()]
 };
@@ -70,8 +70,10 @@ function render(time) {
     gl.enable(gl.CULL_FACE);
     gl.useProgram(program);
     gl.bindVertexArray(vao);
-    
-    var m = m4.projection(w, h, 400);
+
+    var aspect = w/h;
+    var zNear = 1, zFar = 2000;
+    var m = m4.perspective(rad(60), aspect, zNear, zFar);
     m = m4.translate(m, o.translate[0], o.translate[1], o.translate[2]);
     m = m4.xRotate(m, o.rotation[0]);
     m = m4.yRotate(m, o.rotation[1]);

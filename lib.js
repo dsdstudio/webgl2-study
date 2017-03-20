@@ -568,5 +568,24 @@ var m4 = {
              (near+far)/near-far),
             1
         ];
+    },
+    makeZToWMatrix(fudgeFactor) {
+        return [
+            1,0,0,0,
+            0,1,0,0,
+            0,0,1,fudgeFactor,
+            0,0,0,1
+        ];
+    },
+    perspective: function(fovRad, aspect, near, far) {
+        var f = Math.tan(Math.PI*0.5 - 0.5 * fovRad);
+        var rangeInv = 1.0 / (near-far);
+
+        return [
+            f/aspect, 0,0,0,
+            0,f,0,0,
+            0,0,(near+far)*rangeInv, -1,
+            0,0,near*far*rangeInv*2, 0
+        ];
     }
 };
