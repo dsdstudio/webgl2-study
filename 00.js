@@ -42,18 +42,18 @@ gl.vertexAttribPointer(colorLocation, 3, gl.UNSIGNED_BYTE, true, 0, 0);
 setColors(gl);
 
 
+// 포지션 버퍼
 var positionBuffer = gl.createBuffer();
-
 gl.enableVertexAttribArray(positionAttributeLocation);
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+// 버퍼 할당은enable vertexattribarr - bindBuffer 이후에 해야 할당이 됨,
+setAlphabetF(gl);
+// vertexAttribPointer는 아무때나 실행되도 된다능
 
 gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
 
-gl.useProgram(program);
-gl.bindVertexArray(vao);
 var w = gl.canvas.clientWidth, h = gl.canvas.clientHeight;
-gl.viewport(0, 0, w, h);
 var o = {
     translate:[45,150,0],
     rotation:[rad(40),rad(25),rad(325)],
@@ -63,11 +63,13 @@ var o = {
 
 function render(time) {
     resizeCanvasToDisplaySize(gl.canvas);
+    gl.viewport(0, 0, w, h);
     gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-
-    gl.enable(gl.CULL_FACE);
     gl.enable(gl.DEPTH_TEST);
+    gl.enable(gl.CULL_FACE);
+    gl.useProgram(program);
+    gl.bindVertexArray(vao);
     
     var m = m4.projection(w, h, 400);
     m = m4.translate(m, o.translate[0], o.translate[1], o.translate[2]);
@@ -75,12 +77,12 @@ function render(time) {
     m = m4.yRotate(m, o.rotation[1]);
     m = m4.zRotate(m, o.rotation[2]);
     m = m4.scale(m, o.scale[0], o.scale[1], o.scale[2]);
-    setAlphabetF(gl);
 
     gl.uniformMatrix4fv(matLocation, false, m);
 
     gl.drawArrays(gl.TRIANGLES, 0, 16*6);
     requestAnimationFrame(render);
 }
+
 //render();
 requestAnimationFrame(render);
