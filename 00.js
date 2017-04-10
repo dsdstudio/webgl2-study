@@ -62,10 +62,15 @@ var o = {
 };
 
 var cameraAngleInRadians = rad(0);
-
-document.getElementById('slider').addEventListener('input', function(e) {
+var cameraHeight = 0;
+document.getElementById('cameraAngle').addEventListener('input', function(e) {
     var cameraAngle = e.target.value;
     cameraAngleInRadians = rad(cameraAngle);
+    document.getElementById('cameraAngleText').innerHTML = cameraHeight;
+});
+document.getElementById('cameraHeight').addEventListener('input', function(e) {
+    cameraHeight = e.target.value;
+    document.getElementById('cameraHeightText').innerHTML = cameraHeight;
 });
 function render(time) {
     resizeCanvasToDisplaySize(gl.canvas);
@@ -80,12 +85,22 @@ function render(time) {
 
     var numFs = 5;
     var radius = 200;
+    var fPosition = [radius, 0, 0];
 
     var aspect = w/h;
     var zNear = 1, zFar = 2000;
     var projectionMatrix = m4.perspective(rad(60), aspect, zNear, zFar);
     var cameraMatrix = m4.yRotation(cameraAngleInRadians);
-    cameraMatrix = m4.translate(cameraMatrix, 0, 0, radius * 1.5);
+    cameraMatrix = m4.translate(cameraMatrix, 0, cameraHeight, radius * 1.5);
+
+    var cameraPosition = [
+        cameraMatrix[12],
+        cameraMatrix[13],
+        cameraMatrix[14]
+    ];
+
+    var up = [0, 1, 0];
+    cameraMatrix = m4.lookAt(cameraPosition, fPosition, up);
 
     var viewMatrix = m4.inverse(cameraMatrix);
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);

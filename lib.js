@@ -370,6 +370,23 @@ function createRegularTriangleBuffer(gl, x, y, radius, n) {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(buf), gl.STATIC_DRAW);
 }
 
+function cross(a, b) {
+  return [a[1] * b[2] - a[2] * b[1],
+          a[2] * b[0] - a[0] * b[2],
+          a[0] * b[1] - a[1] * b[0]];
+}
+
+function subtractVec(a, b) {
+    return [a[0] - b[0], a[1] - b[1], a[2] - b[2]];
+}
+
+function normalize(v) {
+    var len = Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
+    if ( len > 0.00001 ) return [v[0] / len, v[1] / len, v[2] / len];
+    return [0,0,0];
+}
+
+
 var m3 = {
     identity: function() {
         return [
@@ -608,7 +625,21 @@ var m4 = {
             0,0,near*far*rangeInv*2, 0
         ];
     },
-    
+    lookAt: function(cameraPosition, target, up) {
+        var zAxis = normalize(subtractVec(cameraPosition, target));
+        var xAxis = cross(up, zAxis);
+        var yAxis = cross(zAxis, xAxis);
+
+        return [
+            xAxis[0], xAxis[1], xAxis[2], 0,
+            yAxis[0], yAxis[1], yAxis[2], 0,
+            zAxis[0], zAxis[1], zAxis[2], 0,
+            cameraPosition[0],
+            cameraPosition[1],
+            cameraPosition[2],
+            1
+        ];
+    },
     inverse: function(m) {
         var m00 = m[0 * 4 + 0];
         var m01 = m[0 * 4 + 1];
@@ -693,5 +724,4 @@ var m4 = {
                  (tmp_20 * m12 + tmp_23 * m22 + tmp_17 * m02)),
         ];
     }
-
 };
