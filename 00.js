@@ -26,7 +26,6 @@ var vShader = createShader(gl, gl.VERTEX_SHADER, vShaderSource);
 var fShader = createShader(gl, gl.FRAGMENT_SHADER, fShaderSource);
 var program = createProgram(gl, vShader, fShader);
 
-var positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 var matLocation = gl.getUniformLocation(program, 'u_matrix');
 
 // 00. attribute 상태를 관리하는 vertex array object를 생성한다. 
@@ -43,14 +42,15 @@ setColors(gl);
 
 
 // 포지션 버퍼
+var positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 var positionBuffer = gl.createBuffer();
-gl.enableVertexAttribArray(positionAttributeLocation);
 gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
+
+gl.enableVertexAttribArray(positionAttributeLocation);
+gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 // 버퍼 할당은enable vertexattribarr - bindBuffer 이후에 해야 할당이 됨,
 setAlphabetF(gl);
 // vertexAttribPointer는 아무때나 실행되도 된다능
-
-gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 
 
 var w = gl.canvas.clientWidth, h = gl.canvas.clientHeight;
@@ -74,6 +74,7 @@ function render(time) {
     var aspect = w/h;
     var zNear = 1, zFar = 2000;
     var m = m4.perspective(rad(60), aspect, zNear, zFar);
+
     m = m4.translate(m, o.translate[0], o.translate[1], o.translate[2]);
     m = m4.xRotate(m, o.rotation[0]);
     m = m4.yRotate(m, o.rotation[1]);
