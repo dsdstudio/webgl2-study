@@ -61,6 +61,12 @@ var o = {
     colors:[Math.random(), Math.random(), Math.random()]
 };
 
+var cameraAngleInRadians = rad(0);
+
+document.getElementById('slider').addEventListener('input', function(e) {
+    var cameraAngle = e.target.value;
+    cameraAngleInRadians = rad(cameraAngle);
+});
 function render(time) {
     resizeCanvasToDisplaySize(gl.canvas);
     gl.viewport(0, 0, w, h);
@@ -68,22 +74,31 @@ function render(time) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
+    
     gl.useProgram(program);
     gl.bindVertexArray(vao);
 
+    var numFs = 5;
+    var radius = 200;
+
     var aspect = w/h;
     var zNear = 1, zFar = 2000;
-    var m = m4.perspective(rad(60), aspect, zNear, zFar);
+    var projectionMatrix = m4.perspective(rad(60), aspect, zNear, zFar);
+    var cameraMatrix = m4.yRotation(cameraAngleInRadians);
+    cameraMatrix = m4.translate(cameraMatrix, 0, 0, radius * 1.5);
 
-    m = m4.translate(m, o.translate[0], o.translate[1], o.translate[2]);
-    m = m4.xRotate(m, o.rotation[0]);
-    m = m4.yRotate(m, o.rotation[1]);
-    m = m4.zRotate(m, o.rotation[2]);
-    m = m4.scale(m, o.scale[0], o.scale[1], o.scale[2]);
+    var viewMatrix = m4.inverse(cameraMatrix);
+    var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
-    gl.uniformMatrix4fv(matLocation, false, m);
+    for (var i = 0; i<numFs; ++i) {
+        var angle = i * Math.PI * 2 / numFs;
+        var x = Math.cos(angle) * radius;
+        var z = Math.sin(angle) * radius;
+        var matrix = m4.translate(viewProjectionMatrix, x, 0, z);
+        gl.uniformMatrix4fv(matLocation, false, matrix);
 
-    gl.drawArrays(gl.TRIANGLES, 0, 16*6);
+        gl.drawArrays(gl.TRIANGLES, 0, 16*6);
+    }    
     requestAnimationFrame(render);
 }
 
