@@ -3,24 +3,34 @@ var gl = canvas.getContext('webgl2');
 if(!gl) console.error('webgl initialize failed');
 var vShaderSource = `#version 300 es
 in vec4 a_position;
-in vec4 a_color;
+in vec3 a_normal;
 
 uniform mat4 u_matrix;
-out vec4 v_color;
+out vec3 v_normal;
 
 void main() {
   vec4 position = u_matrix * a_position;
   gl_Position = position;
 
-  v_color = a_color;
+  v_normal = a_normal;
 }`;
 var fShaderSource = `#version 300 es
 precision mediump float;
-in vec4 v_color;
+in vec3 v_normal;
+
+uniform vec3 u_reverseLightDirection;
+uniform vec4 u_color;
+
 out vec4 outColor;
 
 void main() {
-  outColor = v_color;
+  vec3 normal = normalize(v_normal);
+
+  float light = dot(normal, u_reverseLightDirection);
+
+  outColor = u_color;
+
+  outColor.rgb *= light;
 }`;
 var vShader = createShader(gl, gl.VERTEX_SHADER, vShaderSource);
 var fShader = createShader(gl, gl.FRAGMENT_SHADER, fShaderSource);
@@ -32,13 +42,15 @@ var matLocation = gl.getUniformLocation(program, 'u_matrix');
 var vao = gl.createVertexArray();
 gl.bindVertexArray(vao);
 
-var colorLocation = gl.getAttribLocation(program, 'a_color');
-var colorBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+var colorLocation = gl.getUniformLocation(program, 'u_color');
+var reverseLightDirectionLocation = gl.getUniformLocation(program, 'u_reverseLightDirection');
+var normalLocation = gl.getAttribLocation(program, 'a_normal');
+var normalBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
 
-gl.enableVertexAttribArray(colorLocation);
-gl.vertexAttribPointer(colorLocation, 3, gl.UNSIGNED_BYTE, true, 0, 0);
-setColors(gl);
+gl.enableVertexAttribArray(normalLocation);
+gl.vertexAttribPointer(normalLocation, 3, gl.UNSIGNED_BYTE, true, 0, 0);
+setNormals(gl);
 
 
 // 포지션 버퍼
@@ -72,10 +84,12 @@ document.getElementById('cameraHeight').addEventListener('input', function(e) {
     cameraHeight = e.target.value;
     document.getElementById('cameraHeightText').innerHTML = cameraHeight;
 });
+
+gl.viewport(0, 0, w, h);
+gl.clearColor(0,0,0,0);
+
 function render(time) {
     resizeCanvasToDisplaySize(gl.canvas);
-    gl.viewport(0, 0, w, h);
-    gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
@@ -104,6 +118,9 @@ function render(time) {
 
     var viewMatrix = m4.inverse(cameraMatrix);
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
+
+    gl.uniform4fv(colorLocation, [0.2, 1, 0.2, 1]);
+    gl.uniform3fv(reverseLightDirectionLocation, m4.normalize([0.5, 0.7, 1]));
 
     for (var i = 0; i<numFs; ++i) {
         var angle = i * Math.PI * 2 / numFs;
