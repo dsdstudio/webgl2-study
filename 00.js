@@ -42,17 +42,6 @@ var matLocation = gl.getUniformLocation(program, 'u_matrix');
 var vao = gl.createVertexArray();
 gl.bindVertexArray(vao);
 
-var colorLocation = gl.getUniformLocation(program, 'u_color');
-var reverseLightDirectionLocation = gl.getUniformLocation(program, 'u_reverseLightDirection');
-var normalLocation = gl.getAttribLocation(program, 'a_normal');
-var normalBuffer = gl.createBuffer();
-gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
-
-gl.enableVertexAttribArray(normalLocation);
-gl.vertexAttribPointer(normalLocation, 3, gl.UNSIGNED_BYTE, true, 0, 0);
-setNormals(gl);
-
-
 // 포지션 버퍼
 var positionAttributeLocation = gl.getAttribLocation(program, 'a_position');
 var positionBuffer = gl.createBuffer();
@@ -63,6 +52,16 @@ gl.vertexAttribPointer(positionAttributeLocation, 3, gl.FLOAT, false, 0, 0);
 // 버퍼 할당은enable vertexattribarr - bindBuffer 이후에 해야 할당이 됨,
 setAlphabetF(gl);
 // vertexAttribPointer는 아무때나 실행되도 된다능
+
+var colorLocation = gl.getUniformLocation(program, 'u_color');
+var reverseLightDirectionLocation = gl.getUniformLocation(program, 'u_reverseLightDirection');
+var normalLocation = gl.getAttribLocation(program, 'a_normal');
+var normalBuffer = gl.createBuffer();
+gl.bindBuffer(gl.ARRAY_BUFFER, normalBuffer);
+
+gl.enableVertexAttribArray(normalLocation);
+gl.vertexAttribPointer(normalLocation, 3, gl.FLOAT, false, 0, 0);
+setNormals(gl);
 
 
 var w = gl.canvas.clientWidth, h = gl.canvas.clientHeight;
@@ -86,11 +85,12 @@ document.getElementById('cameraHeight').addEventListener('input', function(e) {
 });
 
 gl.viewport(0, 0, w, h);
-gl.clearColor(0,0,0,0);
 
 function render(time) {
     resizeCanvasToDisplaySize(gl.canvas);
+    gl.clearColor(0,0,0,0);
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+
     gl.enable(gl.DEPTH_TEST);
     gl.enable(gl.CULL_FACE);
     
