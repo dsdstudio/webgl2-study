@@ -6,13 +6,15 @@ in vec4 a_position;
 in vec3 a_normal;
 
 uniform mat4 u_matrix;
+uniform mat4 u_worldViewProjection;
+uniform mat4 u_world;
+
 out vec3 v_normal;
 
 void main() {
-  vec4 position = u_matrix * a_position;
-  gl_Position = position;
+  gl_Position = u_worldViewProjection * a_position;
 
-  v_normal = a_normal;
+  v_normal = mat3(u_world) * a_normal;
 }`;
 var fShaderSource = `#version 300 es
 precision mediump float;
@@ -36,7 +38,8 @@ var vShader = createShader(gl, gl.VERTEX_SHADER, vShaderSource);
 var fShader = createShader(gl, gl.FRAGMENT_SHADER, fShaderSource);
 var program = createProgram(gl, vShader, fShader);
 
-var matLocation = gl.getUniformLocation(program, 'u_matrix');
+var worldViewProjectionLocation = gl.getUniformLocation(program, 'u_worldViewProjection');
+var worldLocation = gl.getUniformLocation(program, 'u_world');
 
 // 00. attribute 상태를 관리하는 vertex array object를 생성한다. 
 var vao = gl.createVertexArray();
@@ -72,7 +75,7 @@ var o = {
     colors:[Math.random(), Math.random(), Math.random()]
 };
 
-var cameraAngleInRadians = rad(0);
+var cameraAngleInRadians = 0;
 var cameraHeight = 0;
 document.getElementById('cameraAngle').addEventListener('input', function(e) {
     var cameraAngle = e.target.value;
@@ -99,37 +102,37 @@ function render(time) {
 
     var numFs = 5;
     var radius = 200;
-    var fPosition = [radius, 0, 0];
 
     var aspect = w/h;
     var zNear = 1, zFar = 2000;
     var projectionMatrix = m4.perspective(rad(60), aspect, zNear, zFar);
-    var cameraMatrix = m4.yRotation(cameraAngleInRadians);
-    cameraMatrix = m4.translate(cameraMatrix, 0, cameraHeight, radius * 1.5);
 
-    var cameraPosition = [
-        cameraMatrix[12],
-        cameraMatrix[13],
-        cameraMatrix[14]
-    ];
-
+    var cameraPosition = [100,150,200];
+    var target = [0, 35, 0];
     var up = [0, 1, 0];
-    cameraMatrix = m4.lookAt(cameraPosition, fPosition, up);
+    var cameraMatrix = m4.lookAt(cameraPosition, target, up);
 
     var viewMatrix = m4.inverse(cameraMatrix);
     var viewProjectionMatrix = m4.multiply(projectionMatrix, viewMatrix);
 
+    var worldMatrix = m4.yRotation(cameraAngleInRadians);
+    var worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
+
+
+    gl.uniformMatrix4fv(worldViewProjectionLocation, false, worldViewProjectionMatrix);
+    
+    gl.uniformMatrix4fv(worldLocation, false, worldMatrix);
+
     gl.uniform4fv(colorLocation, [0.2, 1, 0.2, 1]);
     gl.uniform3fv(reverseLightDirectionLocation, m4.normalize([0.5, 0.7, 1]));
 
+    gl.drawArrays(gl.TRIANGLES, 0, 16*6);
     for (var i = 0; i<numFs; ++i) {
         var angle = i * Math.PI * 2 / numFs;
         var x = Math.cos(angle) * radius;
         var z = Math.sin(angle) * radius;
-        var matrix = m4.translate(viewProjectionMatrix, x, 0, z);
-        gl.uniformMatrix4fv(matLocation, false, matrix);
 
-        gl.drawArrays(gl.TRIANGLES, 0, 16*6);
+//        var matrix = m4.translate(viewProjectionMatrix, x, 0, z);
     }    
     requestAnimationFrame(render);
 }
