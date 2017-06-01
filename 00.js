@@ -77,16 +77,12 @@ var o = {
 
 var cameraAngleInRadians = 0;
 var cameraHeight = 0;
-document.getElementById('cameraAngle').addEventListener('input', function(e) {
-    var cameraAngle = e.target.value;
-    cameraAngleInRadians = rad(cameraAngle);
-    document.getElementById('cameraAngleText').innerHTML = cameraHeight;
+document.addEventListener('mousemove', function(e) {
+    var angle = (e.clientX/w) * 720;
+    var height = (e.clientY/h) * 300;
+    cameraAngleInRadians = rad(angle);
+    cameraHeight = height;
 });
-document.getElementById('cameraHeight').addEventListener('input', function(e) {
-    cameraHeight = e.target.value;
-    document.getElementById('cameraHeightText').innerHTML = cameraHeight;
-});
-
 gl.viewport(0, 0, w, h);
 
 function render(time) {
@@ -100,6 +96,7 @@ function render(time) {
     gl.useProgram(program);
     gl.bindVertexArray(vao);
 
+    cameraAngleInRadians += 0.01;
     var numFs = 5;
     var radius = 200;
 
@@ -107,7 +104,7 @@ function render(time) {
     var zNear = 1, zFar = 2000;
     var projectionMatrix = m4.perspective(rad(60), aspect, zNear, zFar);
 
-    var cameraPosition = [100,150,200];
+    var cameraPosition = [100,cameraHeight,200];
     var target = [0, 35, 0];
     var up = [0, 1, 0];
     var cameraMatrix = m4.lookAt(cameraPosition, target, up);
