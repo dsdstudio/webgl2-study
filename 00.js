@@ -79,11 +79,14 @@ var cameraAngleInRadians = 0;
 var cameraHeight = 0;
 document.addEventListener('mousemove', function(e) {
     var angle = (e.clientX/w) * 720;
-    var height = (e.clientY/h) * 300;
+    var height = (e.clientY/h) * 1000;
     cameraAngleInRadians = rad(angle);
     cameraHeight = height;
 });
+
+
 gl.viewport(0, 0, w, h);
+
 
 function render(time) {
     resizeCanvasToDisplaySize(gl.canvas);
@@ -116,20 +119,19 @@ function render(time) {
     var worldViewProjectionMatrix = m4.multiply(viewProjectionMatrix, worldMatrix);
 
 
-    gl.uniformMatrix4fv(worldViewProjectionLocation, false, worldViewProjectionMatrix);
     
     gl.uniformMatrix4fv(worldLocation, false, worldMatrix);
 
     gl.uniform4fv(colorLocation, [0.2, 1, 0.2, 1]);
     gl.uniform3fv(reverseLightDirectionLocation, m4.normalize([0.5, 0.7, 1]));
 
-    gl.drawArrays(gl.TRIANGLES, 0, 16*6);
     for (var i = 0; i<numFs; ++i) {
         var angle = i * Math.PI * 2 / numFs;
         var x = Math.cos(angle) * radius;
         var z = Math.sin(angle) * radius;
-
-//        var matrix = m4.translate(viewProjectionMatrix, x, 0, z);
+        var matrix = m4.translate(worldViewProjectionMatrix, x, 0, z);
+        gl.uniformMatrix4fv(worldViewProjectionLocation, false, matrix);
+        gl.drawArrays(gl.TRIANGLES, 0, 16*6);
     }    
     requestAnimationFrame(render);
 }
