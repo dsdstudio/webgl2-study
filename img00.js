@@ -1,8 +1,8 @@
-var canvas = document.getElementById('c');
-var gl = canvas.getContext('webgl2');
+let canvas = document.getElementById('c');
+let gl = canvas.getContext('webgl2');
 if (!gl) console.error('webgl init failed');
 
-var vShaderSource = `#version 300 es
+let vShaderSource = `#version 300 es
 in vec2 a_position;
 in vec2 a_texCoord;
 
@@ -14,7 +14,7 @@ void main() {
 
   v_texCoord = a_texCoord;
 }`;
-var fShaderSource = `#version 300 es
+let fShaderSource = `#version 300 es
 precision mediump float;
 
 uniform sampler2D u_image;
@@ -41,16 +41,28 @@ void main() {
     texture(u_image, v_texCoord + onePixel * vec2(1, 1)) * u_kernel[8];
   outColor = vec4((colorSum / u_kernelWeight).rgb, 1);
 }`;
-var vShader = createShader(gl, gl.VERTEX_SHADER, vShaderSource);
-var fShader = createShader(gl, gl.FRAGMENT_SHADER, fShaderSource);
-var program = createProgram(gl, vShader, fShader);
+let vShader = createShader(gl, gl.VERTEX_SHADER, vShaderSource);
+let fShader = createShader(gl, gl.FRAGMENT_SHADER, fShaderSource);
+let program = createProgram(gl, vShader, fShader);
 
 
 
-var w = canvas.clientWidth, h = canvas.clientHeight;
+let w = canvas.clientWidth, h = canvas.clientHeight;
 // projection * translate * rot*scale*position
 
-var image;
+let models = (() => {
+    var arr = []
+    for (let i = 0, n =1000; i<n; i++) arr.push({p: {x:w * Math.random(), y: h * Math.random()},
+                                                scale:Math.random() * 0.1,
+                                                angle:Math.random() * 360,
+                                                speed: 2,
+                                                center:function() {
+                                                    return {x: image.width * this.scale * 0.5, y:image.height * this.scale * 0.5}
+                                                }})
+                                                
+    return arr
+})()
+let image;
 loadTexture('t0.png').then(function(img) {
     image = img;
     render(image);
@@ -85,7 +97,6 @@ function render() {
     gl.vertexAttribPointer(positionAttributeLocation, 2, gl.FLOAT, false, 0, 0);
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
 
-    var center = {x:image.width*.5, y :image.height*.5};
     setRect(gl, 0, 0, image.width, image.height);
 
     var texCoordBuffer = gl.createBuffer();
@@ -108,7 +119,6 @@ function render() {
     gl.vertexAttribPointer(texCoordAttributeLocation, size,type,normalize,stride,offset);
 
     var texture = createAndSetupTexture(gl);
-
     var mipLevel = 0,
         internalFormat = gl.RGBA,
         srcFormat = gl.RGBA,
@@ -122,7 +132,6 @@ function render() {
 
     gl.bindVertexArray(vao);
 
-    
     // 뷰포트 
     gl.viewport(0, 0, gl.canvas.clientWidth, gl.canvas.clientHeight);
 
@@ -136,18 +145,17 @@ function render() {
 
     gl.uniform1fv(kernelLocation, edgeDetectKernel);
     gl.uniform1f(kernelWeightLocation, computeKernelWeight(edgeDetectKernel));
-    for ( var i = 0; i < 11; i++) {
-        var m = m3.projection(w, h);
-        var p = {x:image.width*i, y:image.height*i};
-        m = m3.translate(m, p.x, p.y);
-        m = m3.translate(m, -center.x, -center.y);
-        m = m3.rotate(m, rad(angle));
-        m = m3.translate(m, -center.x, -center.y);
-        m = m3.scale(m, 1, 1);
+    models.forEach((model, index) => {
+        model.angle += model.speed
+        let m = m3.projection(w, h);
+        m = m3.translate(m, model.p.x, model.p.y);
+        m = m3.translate(m, -model.center().x, -model.center().y);
+        m = m3.rotate(m, rad(model.angle));
+        m = m3.translate(m, -model.center().x, -model.center().y);
+        m = m3.scale(m, model.scale, model.scale);
         gl.uniformMatrix3fv(matLocation, false, m);
         gl.drawArrays(gl.TRIANGLES, 0, 6);
-    }
-    angle+=1;
+    })
     requestAnimationFrame(render);
 }
 
@@ -158,6 +166,6 @@ function computeKernelWeight(kernel) {
     return weight <= 0 ? 1 : weight;
 }
 
-window.addEventListener('resize', function(e) {
+window.addEventListener('resize', (e) => {
     render(image);
 }, false);
