@@ -56,7 +56,7 @@ let models = (() => {
                                                 scale:Math.random() * 0.1,
                                                 angle:Math.random() * 360,
                                                 speed: 2,
-                                                center:function() {
+                                                center() {
                                                     return {x: image.width * this.scale * 0.5, y:image.height * this.scale * 0.5}
                                                 }})
                                                 
@@ -65,7 +65,7 @@ let models = (() => {
 let image;
 loadTexture('t0.png').then(function(img) {
     image = img;
-    render(image);
+    render();
 });
 var angle = 1;
 function render() {
@@ -166,6 +166,15 @@ function computeKernelWeight(kernel) {
     return weight <= 0 ? 1 : weight;
 }
 
+function resize(canvas) {
+  let dw = canvas.clientWidth, dh = canvas.clientHeight
+  if (canvas.width != dw || canvas.height != dh) {
+    canvas.width = dw
+    canvas.height = dh
+    w = dw, h = dh
+  }
+}
 window.addEventListener('resize', (e) => {
-    render(image);
+  resize(canvas)
+  render()
 }, false);
