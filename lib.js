@@ -480,7 +480,8 @@ function resizeCanvasToDisplaySize(canvas, multiplier) {
     return false;
 }
 
-function randInt(range) { return Math.floor(Math.random() * range); }
+let rand = (range) =>  Math.random() * range
+let randInt = (range) => Math.floor(rand(range))
 function rad(angle) { return angle*Math.PI/180; }
 function createRegularTriangleBuffer(gl, x, y, radius, n) {
     // 원의 반지름음 0.5라 가정

@@ -52,9 +52,9 @@ let w = canvas.clientWidth, h = canvas.clientHeight;
 
 let models = (() => {
   var arr = []
-  for (let i = 0, n =1000; i<n; i++) arr.push({p: {x:w * Math.random(), y: h * Math.random()},
-                                               scale:Math.random() * 0.1,
-                                               angle:Math.random() * 360,
+  for (let i = 0, n =1000; i<n; i++) arr.push({p: {x:rand(w), y: rand(h)},
+                                               scale:rand(0.1),
+                                               angle:rand(360),
                                                speed: 2,
                                                center() {
                                                  return {x: image.width * this.scale * 0.5, y:image.height * this.scale * 0.5}
